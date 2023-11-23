@@ -1,6 +1,6 @@
 function startMemoryGame() {
-    // Add logic to start memory game
-    alert("Memory Game Started!");
+    // Redirect to the memory game page
+    window.location.href = "memory-game.html";
 }
 
 function startFocusExercises() {
