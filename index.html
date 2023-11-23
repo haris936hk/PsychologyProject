@@ -3,20 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Training App</title>
     <link rel="stylesheet" href="styles.css">
-    <title>Cognitive Training Game</title>
 </head>
 <body>
-    <div id="menu">
-        <h1>Select a Game:</h1>
-        <button onclick="startMemoryTraining()">Memory Training</button>
-        <button onclick="startAttentionTraining()">Attention Training</button>
+    <h1>Cognitive Training App</h1>
+
+    <div id="memory-game" onclick="startMemoryGame()">
+        <h2>Memory: Pattern Recognition</h2>
+        <p>Click to start Memory Game</p>
     </div>
 
-    <div id="game" style="display: none;">
-        <!-- Game content goes here -->
+    <div id="focus-exercises" onclick="startFocusExercises()">
+        <h2>Attention: Focus Exercises</h2>
+        <p>Click to start Focus Exercises</p>
     </div>
 
-    <script src="script.js"></script>
+    <div id="problem-solving" onclick="startProblemSolving()">
+        <h2>Problem-Solving: Logic Challenges</h2>
+        <p>Click to start Logic Challenges</p>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>

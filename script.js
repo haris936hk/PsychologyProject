@@ -1,10 +1,14 @@
-// Your JavaScript code here
-function startMemoryTraining() {
-    // Logic for starting memory training game
-    console.log("Starting Memory Training Game");
+function startMemoryGame() {
+    // Add logic to start memory game
+    alert("Memory Game Started!");
 }
 
-function startAttentionTraining() {
-    // Logic for starting attention training game
-    console.log("Starting Attention Training Game");
+function startFocusExercises() {
+    // Add logic to start focus exercises
+    alert("Focus Exercises Started!");
+}
+
+function startProblemSolving() {
+    // Add logic to start logic challenges
+    alert("Logic Challenges Started!");
 }
