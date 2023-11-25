@@ -4,25 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cognitive Training App</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="memory-game.css">
+    
 </head>
 <body>
     <h1>Cognitive Training App</h1>
-
-    <div id="memory-game" onclick="startMemoryGame()">
-        <h2>Memory: Pattern Recognition</h2>
-        <p>Click to start Memory Game</p>
-    </div>
-
-    <div id="focus-exercises" onclick="startFocusExercises()">
-        <h2>Attention: Focus Exercises</h2>
+    <div class="container">
+        <a class="button" style="--color:#ec1eff;" onclick="startMemoryGame()">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <h2>MEMORY</h2>
+            <h2>Pattern Recognition</h2>
+          <p>Click to start Memory Game</p>
+        </a>
+        <a class="button" style="--color:#1ee5ff;" onclick="startFocusExercises()">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <h2>Attention</h2>
+            <h2>Focus Exercises</h2>
         <p>Click to start Focus Exercises</p>
-    </div>
-
-    <div id="problem-solving" onclick="startProblemSolving()">
-        <h2>Problem-Solving: Logic Challenges</h2>
+          </a>
+          <a class="button" style="--color:#31ff1e;" onclick="startProblemSolving()">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <h2>Problem-Solving</h2>
+            <h2>Logic Challenges</h2>
         <p>Click to start Logic Challenges</p>
-    </div>
+          </a>
+      </div>
+
 
     <script src="script.js"></script>
 </body>

@@ -8,14 +8,20 @@ h1 {
     color: #333;
 }
 
+#main-div{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border: solid black;
+    width: 1300px;
+    height: 150px;
+}
+
 #memory-game, #focus-exercises, #problem-solving {
-    display: inline-block;
-    margin: 20px;
-    padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.2s;
+border: solid red;
+border-radius: 30px;
+height: 120px;
+width: 300px;
 }
 
 #memory-game:hover, #focus-exercises:hover, #problem-solving:hover {
