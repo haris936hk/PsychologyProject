@@ -15,54 +15,43 @@
             overflow: hidden;
             background-color: blue;
             transition: background-color 0.5s ease;
+            color: white;
         }
 
         h1 {
             margin-bottom: 20px;
-            position: relative;
             font-size: 2em;
-            color: #fff;
-        }
-
-        #lightning {
-            position: absolute;
-            top: -30px;
-            width: 50px;
-        }
-
-        #target {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: transparent;
-            display: none;
         }
 
         #instructions {
             margin-top: 20px;
             text-align: center;
-            color: #fff;
+        }
+
+        #reaction-time {
+            font-size: 1.2em;
+            margin-top: 10px;
         }
     </style>
     <title>Reaction Time Test</title>
 </head>
 <body>
-    <div id="lightning">
-        <img src="lightning_icon.png" alt="Lightning Icon">
-    </div>
     <h1>Reaction Time Test</h1>
     <div id="instructions">
         <p>Click anywhere on the screen to start the game.</p>
     </div>
-    <div id="target"></div>
+    <div id="reaction-time"></div>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const target = document.getElementById("target");
             const instructions = document.getElementById("instructions");
-            const title = document.querySelector("h1");
+            const reactionTimeDisplay = document.getElementById("reaction-time");
             let startTime, endTime, isGameStarted = false;
+
+            function setBackgroundColor(color) {
+                document.body.style.transition = "background-color 0.5s ease";
+                document.body.style.backgroundColor = color;
+                document.body.style.color = color === "blue" ? "white" : "black";
+            }
 
             document.addEventListener("click", function () {
                 if (!isGameStarted) {
@@ -72,43 +61,55 @@
             });
 
             function startGame() {
-                title.style.display = "none";
                 instructions.style.display = "none";
-                target.style.display = "block";
-
-                // Change background color to red
-                document.body.style.backgroundColor = "red";
-                target.style.backgroundColor = "red";
+                setBackgroundColor("red");
 
                 startTime = new Date().getTime();
 
-                // After a random time, change background color to green
                 setTimeout(() => {
-                    document.body.style.transition = "background-color 0.2s ease";
-                    document.body.style.backgroundColor = "green";
-                    target.style.backgroundColor = "green";
+                    setBackgroundColor("green");
+                    document.addEventListener("click", function () {
+                        if (isGameStarted) {
+                            endGame();
+                        } else {
+                            tooSoon();
+                        }
+                    });
+                }, Math.random() * 1500 + 500);
+            }
 
-                    // Enable the click event to record reaction time
-                    document.addEventListener("click", endGame);
-                }, Math.random() * 1500 + 500); // Random time between 0.5 to 2 seconds
+            function tooSoon() {
+                setBackgroundColor("blue");
+                instructions.style.display = "block";
+                reactionTimeDisplay.textContent = "Too Soon! Try Again";
+                isGameStarted = false;
             }
 
             function endGame() {
                 endTime = new Date().getTime();
                 const reactionTime = endTime - startTime;
-                alert(`Your reaction time: ${reactionTime} milliseconds`);
-                resetGame();
+
+                reactionTimeDisplay.textContent = `Your reaction time: ${reactionTime} milliseconds`;
+
+                document.addEventListener("click", resetGame);
             }
 
             function resetGame() {
-                document.body.style.transition = "background-color 1s ease";
-                document.body.style.backgroundColor = "blue";
-                target.style.display = "none";
-                title.style.display = "block";
+                setBackgroundColor("blue");
                 instructions.style.display = "block";
+                reactionTimeDisplay.textContent = "";
 
-                // Reset the click event listener
+                document.removeEventListener("click", tooSoon);
                 document.removeEventListener("click", endGame);
+                document.removeEventListener("click", resetGame);
+
+                document.addEventListener("click", function () {
+                    if (!isGameStarted) {
+                        startGame();
+                        isGameStarted = true;
+                    }
+                });
+
                 isGameStarted = false;
             }
         });
