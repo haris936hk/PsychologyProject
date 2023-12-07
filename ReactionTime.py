@@ -1,5 +1,6 @@
 import pygame
 import sys
+import random
 
 # Initialize Pygame
 pygame.init()
@@ -26,7 +27,9 @@ def reaction_time_test():
     screen.fill(WHITE)
     pygame.display.flip()
 
-    pygame.time.wait(1000)  # Wait for 1 second before the prompt
+    # Random delay before the prompt (0.5 to 5 seconds)
+    delay = random.uniform(0.5, 5)
+    pygame.time.wait(int(delay * 1000))
 
     screen.fill(WHITE)
     display_text("NOW!", BLACK, WIDTH // 2, HEIGHT // 2)
@@ -34,9 +37,8 @@ def reaction_time_test():
 
     start_time = pygame.time.get_ticks()
 
-    premature_input = False  # Flag to track premature input
-
     wait_for_input = True
+    immature_flag_triggered = False
     while wait_for_input:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -46,23 +48,22 @@ def reaction_time_test():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
-                end_time = pygame.time.get_ticks()
-                reaction_time = end_time - start_time
 
-                if reaction_time < 0:
-                    # Set the flag and break out of the loop
-                    premature_input = True
-                    wait_for_input = False
+                # Measure time since 'Y' was pressed
+                current_time = pygame.time.get_ticks()
+                reaction_time = current_time - start_time
+
+                if reaction_time <= 0:
+                    # Premature input, display error message immediately
+                    screen.fill(WHITE)
+                    error_text = font.render("Wait for 'NOW!' before pressing Enter!", RED, BLACK)
+                    screen.blit(error_text, (WIDTH // 2 - 300, HEIGHT // 2 - 20))
+                    pygame.display.flip()
+                    immature_flag_triggered = True
                 else:
-                    print(f"Your reaction time: {reaction_time} milliseconds")
+                    if not immature_flag_triggered:
+                        print(f"Your reaction time: {reaction_time} milliseconds")
                     wait_for_input = False
-
-    if premature_input:
-        # Display error message after the loop
-        screen.fill(WHITE)
-        error_text = font.render("Wait for 'NOW!' before pressing Enter!", RED, BLACK)
-        screen.blit(error_text, (WIDTH // 2 - 300, HEIGHT // 2 - 20))
-        pygame.display.flip()
 
 def main():
     print("Welcome to the Reaction Time Test!")
