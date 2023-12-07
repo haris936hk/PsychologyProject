@@ -1,69 +1,31 @@
-#include <SFML/Graphics.hpp>
 #include <iostream>
-#include <cstdlib>
 #include <ctime>
+#include <cstdlib>
+#include <chrono>
+#include <thread>
+
+using namespace std;
 
 int main() {
-    // Set up the window
-    sf::RenderWindow window(sf::VideoMode(800, 600), "Reaction Time Test");
-    window.setFramerateLimit(60);
+    srand(static_cast<unsigned>(time(0))); // Seed for random number generation
 
-    // Set up the target box
-    sf::RectangleShape target(sf::Vector2f(100, 100));
-    target.setFillColor(sf::Color::Red);
-    target.setPosition(350, 250);
-    target.setOutlineThickness(2);
-    target.setOutlineColor(sf::Color::Black);
-    bool targetVisible = false;
+    cout << "Welcome to the Reaction Time Game!" << endl;
+    cout << "Press Enter when you see the prompt." << endl;
 
-    // Set up the font and result text
-    sf::Font font;
-    if (!font.loadFromFile("arial.ttf")) {
-        std::cerr << "Error loading font\n";
-        return EXIT_FAILURE;
-    }
+    // Wait for a random amount of time before prompting the user
+    int delay = rand() % 5000 + 1000; // Delay between 1 and 6 seconds
+    this_thread::sleep_for(chrono::milliseconds(delay));
 
-    sf::Text resultText("", font, 30);
-    resultText.setPosition(250, 400);
-    resultText.setFillColor(sf::Color::Black);
+    auto start_time = chrono::high_resolution_clock::now(); // Record start time
 
-    // Set up timing variables
-    std::clock_t startTime, endTime;
+    cout << "NOW! Press Enter!" << endl;
+    cin.get(); // Wait for user input
 
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
-            
-            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                if (targetVisible) {
-                    endTime = std::clock();
-                    double reactionTime = static_cast<double>(endTime - startTime) / CLOCKS_PER_SEC * 1000;
-                    resultText.setString("Your reaction time: " + std::to_string(reactionTime) + " milliseconds");
-                    targetVisible = false;
-                }
-            }
-        }
+    auto end_time = chrono::high_resolution_clock::now(); // Record end time
 
-        window.clear(sf::Color::White);
+    // Calculate and display reaction time
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
+    cout << "Your reaction time: " << duration.count() << " milliseconds" << endl;
 
-        // Display the target after a random delay
-        if (!targetVisible && (std::clock() - startTime) / CLOCKS_PER_SEC > (std::rand() % 3 + 1)) {
-            targetVisible = true;
-            startTime = std::clock();
-        }
-
-        // Draw the target if visible
-        if (targetVisible) {
-            window.draw(target);
-        }
-
-        // Draw the result text
-        window.draw(resultText);
-
-        window.display();
-    }
-
-    return EXIT_SUCCESS;
+    return 0;
 }
