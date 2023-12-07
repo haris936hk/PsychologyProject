@@ -13,7 +13,6 @@ pygame.display.set_caption("Main Menu")
 # Set up colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (255, 0, 0)
 
 # Set up font
 font = pygame.font.Font(None, 36)
@@ -27,14 +26,23 @@ def display_menu():
     option1_text = font.render("1. Play Reaction Time Test", True, BLACK)
     screen.blit(option1_text, (WIDTH // 2 - 200, HEIGHT // 2 - 20))
 
-    option2_text = font.render("2. Quit", True, BLACK)
+    option2_text = font.render("2. Play Verbal Memory Test", True, BLACK)
     screen.blit(option2_text, (WIDTH // 2 - 200, HEIGHT // 2 + 20))
+
+    option3_text = font.render("3. Quit", True, BLACK)
+    screen.blit(option3_text, (WIDTH // 2 - 200, HEIGHT // 2 + 60))
 
     pygame.display.flip()
 
 def play_reaction_time_test():
     try:
         subprocess.run(["python", "ReactionTime.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+
+def play_verbal_memory_test():
+    try:
+        subprocess.run(["python", "VerbalMemory.py"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
 
@@ -50,6 +58,8 @@ def main_menu():
                 if event.key == pygame.K_1:
                     play_reaction_time_test()
                 elif event.key == pygame.K_2:
+                    play_verbal_memory_test()
+                elif event.key == pygame.K_3:
                     print("Goodbye!")
                     pygame.quit()
                     sys.exit()
