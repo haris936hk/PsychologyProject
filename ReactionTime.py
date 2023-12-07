@@ -44,8 +44,8 @@ def reaction_time_test():
                     pygame.quit()
                     sys.exit()
                 end_time = pygame.time.get_ticks()
-                reaction_time = (end_time - start_time) / 1000  # Convert to seconds
-                print(f"Your reaction time: {reaction_time:.3f} seconds")
+                reaction_time = end_time - start_time
+                print(f"Your reaction time: {reaction_time} milliseconds")
                 wait_for_input = False
 
 def main():
