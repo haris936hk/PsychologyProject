@@ -1,191 +1,286 @@
-import pygame
-import random
+import random, pygame, sys
+from pygame.locals import *
 
-# Initialize Pygame
-pygame.init()
+FPS = 30 
+WINDOWWIDTH = 640 
+WINDOWHEIGHT = 480 
+REVEALSPEED = 8 
+BOXSIZE = 40 
+GAPSIZE = 10 
+BOARDWIDTH = 10 
+BOARDHEIGHT = 7 
+assert (BOARDWIDTH * BOARDHEIGHT) % 2 == 0, 'Board needs to have an even number of boxes for pairs of matches.'
+XMARGIN = int((WINDOWWIDTH - (BOARDWIDTH * (BOXSIZE + GAPSIZE))) / 2)
+YMARGIN = int((WINDOWHEIGHT - (BOARDHEIGHT * (BOXSIZE + GAPSIZE))) / 2)
 
-# Constants
-WINDOW_WIDTH = 800
-WINDOW_HEIGHT = 600
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-FONT_SIZE = 30
-SEQUENCE_LENGTH = 3  # Reduced for testing purposes
+#            R    G    B
+GRAY     = (100, 100, 100)
+NAVYBLUE = ( 60,  60, 100)
+WHITE    = (255, 255, 255)
+RED      = (255,   0,   0)
+GREEN    = (  0, 255,   0)
+BLUE     = (  0,   0, 255)
+YELLOW   = (255, 255,   0)
+ORANGE   = (255, 128,   0)
+PURPLE   = (255,   0, 255)
+CYAN     = (  0, 255, 255)
+BLACK    = (0, 0, 0)
 
-# Button Colors
-BUTTON_NORMAL_COLOR = (0, 150, 0)
-BUTTON_HOVER_COLOR = (0, 200, 0)
-BUTTON_PRESS_COLOR = (0, 100, 0)
+BGCOLOR = BLACK
+LIGHTBGCOLOR = GRAY
+BOXCOLOR = WHITE
+HIGHLIGHTCOLOR = BLUE
 
-# Function to generate a random word
-def generate_random_word():
-    words = ["apple", "banana", "orange", "grape", "kiwi", "melon", "strawberry", "pineapple"]
-    return random.choice(words)
+DONUT = 'donut'
+SQUARE = 'square'
+DIAMOND = 'diamond'
+LINES = 'lines'
+OVAL = 'oval'
 
-# Function to display the sequence of words
-def display_words(sequence, font, screen):
-    screen.fill(WHITE)
-    for i, word in enumerate(sequence):
-        text = font.render(word, True, BLACK)
-        screen.blit(text, (300, 200 + i * 50))
-    pygame.display.flip()
+ALLCOLORS = (RED, GREEN, BLUE, YELLOW, ORANGE, PURPLE, CYAN)
+ALLSHAPES = (LINES, SQUARE, DIAMOND, LINES, OVAL)
+assert len(ALLCOLORS) * len(ALLSHAPES) * 2 >= BOARDWIDTH * BOARDHEIGHT, "Board is too big for the number of shapes/colors defined."
 
-# Function to create a button
-def draw_button(screen, rect, color, text, font):
-    pygame.draw.rect(screen, color, rect)
-    text_surface = font.render(text, True, WHITE)
-    text_rect = text_surface.get_rect(center=rect.center)
-    screen.blit(text_surface, text_rect)
+def main():
+    global FPSCLOCK, DISPLAYSURF
+    pygame.init()
+    FPSCLOCK = pygame.time.Clock()
+    DISPLAYSURF = pygame.display.set_mode((WINDOWWIDTH, WINDOWHEIGHT))
 
-# Function to get user input for a given word
-def get_user_input(word, font, screen):
-    input_text = ""
-    input_rect = pygame.Rect(300, 500, 200, 30)
-    input_active = True
+    mousex = 0 
+    mousey = 0 
+    pygame.display.set_caption('Simple Memory Game')
 
-    # Display the first word
-    screen.fill(WHITE)
-    display_words([word], font, screen)
+    mainBoard = getRandomizedBoard()
+    revealedBoxes = generateRevealedBoxesData(False)
 
-    while input_active:
-        pygame.time.delay(10)  # Small delay to reduce CPU usage
+    firstSelection = None 
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+    DISPLAYSURF.fill(BGCOLOR)
+    startGameAnimation(mainBoard)
+
+    while True: 
+        mouseClicked = False
+
+        DISPLAYSURF.fill(BGCOLOR) 
+        drawBoard(mainBoard, revealedBoxes)
+
+        for event in pygame.event.get(): 
+            if event.type == QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
                 pygame.quit()
-                quit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    input_active = False
-                elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text[:-1]
-                else:
-                    input_text += event.unicode
+                sys.exit()
+            elif event.type == MOUSEMOTION:
+                mousex, mousey = event.pos
+            elif event.type == MOUSEBUTTONUP:
+                mousex, mousey = event.pos
+                mouseClicked = True
 
-        # Clear the screen once the player starts typing
-        screen.fill(WHITE)
-        pygame.draw.rect(screen, BLACK, input_rect, 2)
-        text_surface = font.render(input_text, True, BLACK)
-        screen.blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
-        pygame.display.flip()
+        boxx, boxy = getBoxAtPixel(mousex, mousey)
+        if boxx != None and boxy != None:
+           
+            if not revealedBoxes[boxx][boxy]:
+                drawHighlightBox(boxx, boxy)
+            if not revealedBoxes[boxx][boxy] and mouseClicked:
+                revealBoxesAnimation(mainBoard, [(boxx, boxy)])
+                revealedBoxes[boxx][boxy] = True 
+                if firstSelection == None: 
+                    firstSelection = (boxx, boxy)
+                else: 
+                    
+                    icon1shape, icon1color = getShapeAndColor(mainBoard, firstSelection[0], firstSelection[1])
+                    icon2shape, icon2color = getShapeAndColor(mainBoard, boxx, boxy)
 
-    return input_text.lower()
+                    if icon1shape != icon2shape or icon1color != icon2color:
+                        
+                        pygame.time.wait(1000) 
+                        coverBoxesAnimation(mainBoard, [(firstSelection[0], firstSelection[1]), (boxx, boxy)])
+                        revealedBoxes[firstSelection[0]][firstSelection[1]] = False
+                        revealedBoxes[boxx][boxy] = False
+                    elif hasWon(revealedBoxes): 
+                        gameWonAnimation(mainBoard)
+                        pygame.time.wait(2000)
 
-# Function to play the Verbal Memory Game with user input, feedback, and scoring
-def play_verbal_memory_game_advanced():
-    score = 0
-    max_sequence_length = 5
-    current_sequence_length = 2  # Starting difficulty
+                        
+                        mainBoard = getRandomizedBoard()
+                        revealedBoxes = generateRevealedBoxesData(False)
 
-    while current_sequence_length <= max_sequence_length:
-        sequence = [generate_random_word() for _ in range(current_sequence_length)]
+                        
+                        drawBoard(mainBoard, revealedBoxes)
+                        pygame.display.update()
+                        pygame.time.wait(1000)
 
-        display_words(sequence, font, screen)
-        pygame.time.delay(2000)  # Display each word for 2 seconds
+                       
+                        startGameAnimation(mainBoard)
+                    firstSelection = None 
 
-        for word in sequence:
-            user_input = get_user_input(word, font, screen)
+        
+        pygame.display.update()
+        FPSCLOCK.tick(FPS)
 
-            # Check user input against the correct word
-            if user_input == word:
-                print("Correct!")
-                score += 1
-            else:
-                print(f"Wrong! The correct word was {word}")
 
-        print(f"Score: {score}/{current_sequence_length}")
-        pygame.time.delay(2000)  # Pause for 2 seconds between sequences
+def generateRevealedBoxesData(val):
+    revealedBoxes = []
+    for i in range(BOARDWIDTH):
+        revealedBoxes.append([val] * BOARDHEIGHT)
+    return revealedBoxes
 
-        # Increase difficulty for the next sequence
-        current_sequence_length += 1
 
-    print("Game Over")
-    return score
-
-# Function to display end game report and ask for play again or exit
-def end_game_report(score):
-    screen.fill(GRAY)
-    report_text = font.render(f"Your final score is: {score}", True, BLACK)
-    feedback_text = font.render("Great job! Keep exercising your verbal memory.", True, BLACK)
-    play_again_text = font.render("Press 'P' to play again or 'Q' to quit.", True, BLACK)
+def getRandomizedBoard():
     
-    screen.blit(report_text, (200, 200))
-    screen.blit(feedback_text, (150, 250))
-    screen.blit(play_again_text, (150, 300))
-    pygame.display.flip()
+    icons = []
+    for color in ALLCOLORS:
+        for shape in ALLSHAPES:
+            icons.append( (shape, color) )
 
-    waiting_for_input = True
-    while waiting_for_input:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    waiting_for_input = False
-                elif event.key == pygame.K_q:
-                    pygame.quit()
-                    quit()
+    random.shuffle(icons) 
+    numIconsUsed = int(BOARDWIDTH * BOARDHEIGHT / 2) 
+    icons = icons[:numIconsUsed] * 2 
+    random.shuffle(icons)
 
-# Set up the Pygame window
-screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-pygame.display.set_caption("Verbal Memory Game")
+    
+    board = []
+    for x in range(BOARDWIDTH):
+        column = []
+        for y in range(BOARDHEIGHT):
+            column.append(icons[0])
+            del icons[0] 
+        board.append(column)
+    return board
 
-# Set up the font
-font = pygame.font.Font(None, FONT_SIZE)
 
-# Set up the button
-button_rect = pygame.Rect(300, 300, 200, 50)
-button_color = BUTTON_NORMAL_COLOR
+def splitIntoGroupsOf(groupSize, theList):
+    
+    result = []
+    for i in range(0, len(theList), groupSize):
+        result.append(theList[i:i + groupSize])
+    return result
 
-# Main game loop
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
-    # Display the start menu
-    screen.fill(GRAY)
-    title_text = font.render("Verbal Memory Game", True, BLACK)
-    instruction_text1 = font.render("Memorize the sequence of words", True, BLACK)
-    instruction_text2 = font.render("Type them in the input box below", True, BLACK)
-    screen.blit(title_text, (200, 50))
-    screen.blit(instruction_text1, (150, 200))
-    screen.blit(instruction_text2, (150, 250))
+def leftTopCoordsOfBox(boxx, boxy):
+    
+    left = boxx * (BOXSIZE + GAPSIZE) + XMARGIN
+    top = boxy * (BOXSIZE + GAPSIZE) + YMARGIN
+    return (left, top)
 
-    # Check if the mouse is over the button
-    if button_rect.collidepoint(pygame.mouse.get_pos()):
-        button_color = BUTTON_HOVER_COLOR
-    else:
-        button_color = BUTTON_NORMAL_COLOR
 
-    # Check if the button is pressed
-    if pygame.mouse.get_pressed()[0] and button_rect.collidepoint(pygame.mouse.get_pos()):
-        button_color = BUTTON_PRESS_COLOR
+def getBoxAtPixel(x, y):
+    for boxx in range(BOARDWIDTH):
+        for boxy in range(BOARDHEIGHT):
+            left, top = leftTopCoordsOfBox(boxx, boxy)
+            boxRect = pygame.Rect(left, top, BOXSIZE, BOXSIZE)
+            if boxRect.collidepoint(x, y):
+                return (boxx, boxy)
+    return (None, None)
 
-        # Wait for the player to release the button
-        while pygame.mouse.get_pressed()[0]:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
 
-        # Play the game
-        score = play_verbal_memory_game_advanced()
+def drawIcon(shape, color, boxx, boxy):
+    quarter = int(BOXSIZE * 0.25)
+    half =    int(BOXSIZE * 0.5) 
 
-        # Display end game report and ask for play again or exit
-        end_game_report(score)
+    left, top = leftTopCoordsOfBox(boxx, boxy) 
+    
+    if shape == DONUT:
+        pygame.draw.circle(DISPLAYSURF, color, (left + half, top + half), half - 5)
+        pygame.draw.circle(DISPLAYSURF, BGCOLOR, (left + half, top + half), quarter - 5)
+    elif shape == SQUARE:
+        pygame.draw.rect(DISPLAYSURF, color, (left + quarter, top + quarter, BOXSIZE - half, BOXSIZE - half))
+    elif shape == DIAMOND:
+        pygame.draw.polygon(DISPLAYSURF, color, ((left + half, top), (left + BOXSIZE - 1, top + half), (left + half, top + BOXSIZE - 1), (left, top + half)))
+    elif shape == LINES:
+        for i in range(0, BOXSIZE, 4):
+            pygame.draw.line(DISPLAYSURF, color, (left, top + i), (left + i, top))
+            pygame.draw.line(DISPLAYSURF, color, (left + i, top + BOXSIZE - 1), (left + BOXSIZE - 1, top + i))
+    elif shape == OVAL:
+        pygame.draw.ellipse(DISPLAYSURF, color, (left, top + quarter, BOXSIZE, half))
 
-        # Clear the screen
-        screen.fill(GRAY)
 
-    # Draw the button
-    draw_button(screen, button_rect, button_color, "Start Game", font)
+def getShapeAndColor(board, boxx, boxy):
+    
+    
+    return board[boxx][boxy][0], board[boxx][boxy][1]
 
-    pygame.display.flip()
 
-    # Control the frame rate
-    pygame.time.Clock().tick(60)
+def drawBoxCovers(board, boxes, coverage):
+    
+    for box in boxes:
+        left, top = leftTopCoordsOfBox(box[0], box[1])
+        pygame.draw.rect(DISPLAYSURF, BGCOLOR, (left, top, BOXSIZE, BOXSIZE))
+        shape, color = getShapeAndColor(board, box[0], box[1])
+        drawIcon(shape, color, box[0], box[1])
+        if coverage > 0: 
+            pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, coverage, BOXSIZE))
+    pygame.display.update()
+    FPSCLOCK.tick(FPS)
 
-pygame.quit()
+
+def revealBoxesAnimation(board, boxesToReveal):
+    
+    for coverage in range(BOXSIZE, (-REVEALSPEED) - 1, -REVEALSPEED):
+        drawBoxCovers(board, boxesToReveal, coverage)
+
+
+def coverBoxesAnimation(board, boxesToCover):
+    
+    for coverage in range(0, BOXSIZE + REVEALSPEED, REVEALSPEED):
+        drawBoxCovers(board, boxesToCover, coverage)
+
+
+def drawBoard(board, revealed):
+    
+    for boxx in range(BOARDWIDTH):
+        for boxy in range(BOARDHEIGHT):
+            left, top = leftTopCoordsOfBox(boxx, boxy)
+            if not revealed[boxx][boxy]:
+               
+                pygame.draw.rect(DISPLAYSURF, BOXCOLOR, (left, top, BOXSIZE, BOXSIZE))
+            else:
+                
+                shape, color = getShapeAndColor(board, boxx, boxy)
+                drawIcon(shape, color, boxx, boxy)
+
+
+def drawHighlightBox(boxx, boxy):
+    left, top = leftTopCoordsOfBox(boxx, boxy)
+    pygame.draw.rect(DISPLAYSURF, HIGHLIGHTCOLOR, (left - 5, top - 5, BOXSIZE + 10, BOXSIZE + 10), 4)
+
+
+def startGameAnimation(board):
+   
+    coveredBoxes = generateRevealedBoxesData(False)
+    boxes = []
+    for x in range(BOARDWIDTH):
+        for y in range(BOARDHEIGHT):
+            boxes.append( (x, y) )
+    random.shuffle(boxes)
+    boxGroups = splitIntoGroupsOf(8, boxes)
+
+    drawBoard(board, coveredBoxes)
+    for boxGroup in boxGroups:
+        revealBoxesAnimation(board, boxGroup)
+        coverBoxesAnimation(board, boxGroup)
+
+
+def gameWonAnimation(board):
+    
+    coveredBoxes = generateRevealedBoxesData(True)
+    color1 = LIGHTBGCOLOR
+    color2 = BGCOLOR
+
+    for i in range(13):
+        color1, color2 = color2, color1 
+        DISPLAYSURF.fill(color1)
+        drawBoard(board, coveredBoxes)
+        pygame.display.update()
+        pygame.time.wait(300)
+
+
+def hasWon(revealedBoxes):
+    
+    for i in revealedBoxes:
+        if False in i:
+            return False 
+    return True
+
+
+if __name__ == '__main__':
+    main()
