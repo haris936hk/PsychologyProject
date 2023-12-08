@@ -1,92 +1,82 @@
 import pygame
 import sys
+import time
 import random
 
 # Initialize Pygame
 pygame.init()
 
-# Set up display
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Reaction Time Test")
+# Screen Setup
+screen_width, screen_height = 720, 720
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Reaction Time Game")
 
-# Set up colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
+# Fonts
+font_large = pygame.font.SysFont("Roboto", 90)
+font_medium = pygame.font.SysFont("Roboto", 40)
 
-# Set up font
-font = pygame.font.Font(None, 36)
+# Colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+red = (255, 0, 0)
+yellow = (255, 255, 0)
+green = (0, 255, 0)
 
-def display_text(text, color, x, y):
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect(center=(x, y))
-    screen.blit(text_surface, text_rect)
+# Texts
+title = font_large.render("Reaction Time Game", True, red)
+click_to_start_text = font_large.render("Click to Start", True, black)
+waiting_text = font_large.render("Wait...", True, black)
+click_now_text = font_large.render("Click NOW!", True, black)
 
-def reaction_time_test():
-    screen.fill(WHITE)
-    pygame.display.flip()
+# Rectangles
+title_rect = title.get_rect(center=(screen_width // 2, 50))
+click_to_start_rect = click_to_start_text.get_rect(center=(screen_width // 2, screen_height // 2))
+waiting_rect = waiting_text.get_rect(center=(screen_width // 2, screen_height // 2))
+click_now_rect = click_now_text.get_rect(center=(screen_width // 2, screen_height // 2))
 
-    # Random delay before the prompt (0.5 to 5 seconds)
-    delay = random.uniform(0.5, 5)
-    pygame.time.wait(int(delay * 1000))
+# Game State
+game_state = "Click to Start"
 
-    screen.fill(WHITE)
-    display_text("NOW!", BLACK, WIDTH // 2, HEIGHT // 2)
-    pygame.display.flip()
+# Game Loop
+while True:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if game_state == "Click to Start":
+                game_state = "Waiting"
+            elif game_state == "Test Starting":
+                end_time = time.time()
+                game_state = "Showing Results"
+            elif game_state == "Showing Results":
+                game_state = "Click to Start"
 
-    start_time = pygame.time.get_ticks()
+    screen.fill(white)
 
-    wait_for_input = True
-    immature_flag_triggered = False
-    while wait_for_input:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
+    # Display Title
+    screen.blit(title, title_rect)
 
-                # Measure time since 'Y' was pressed
-                current_time = pygame.time.get_ticks()
-                reaction_time = current_time - start_time
+    # Game State Logic
+    if game_state == "Click to Start":
+        screen.blit(click_to_start_text, click_to_start_rect)
+    elif game_state == "Waiting":
+        screen.fill(yellow)
+        screen.blit(waiting_text, waiting_rect)
+        pygame.display.update()
 
-                if reaction_time <= 0:
-                    # Premature input, display error message immediately
-                    screen.fill(WHITE)
-                    error_text = font.render("Wait for 'NOW!' before pressing Enter!", RED, BLACK)
-                    screen.blit(error_text, (WIDTH // 2 - 300, HEIGHT // 2 - 20))
-                    pygame.display.flip()
-                    immature_flag_triggered = True
-                else:
-                    if not immature_flag_triggered:
-                        print(f"Your reaction time: {reaction_time} milliseconds")
-                    wait_for_input = False
+        # Introduce a delay before the test starts
+        delay_time = random.uniform(1, 3)
+        time.sleep(delay_time)
 
-def main():
-    print("Welcome to the Reaction Time Test!")
-    running = True
-    while running:
-        screen.fill(WHITE)
+        game_state = "Test Starting"
+        start_time = time.time()
+    elif game_state == "Test Starting":
+        screen.fill(green)
+        screen.blit(click_now_text, click_now_rect)
+    elif game_state == "Showing Results":
+        reaction_time = round((end_time - start_time) * 1000)
+        score_text = font_large.render(f"Speed: {reaction_time} ms", True, black)
+        screen.blit(score_text, score_text.get_rect(center=(screen_width // 2, screen_height // 2)))
 
-        play_again_text = font.render("Do you want to play? (Press 'Y' for yes, 'N' for no)", True, BLACK)
-        screen.blit(play_again_text, (WIDTH // 2 - 250, HEIGHT // 2 - 20))
-        pygame.display.flip()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_y:
-                    reaction_time_test()
-                elif event.key == pygame.K_n:
-                    print("Thanks for playing. Goodbye!")
-                    running = False
-
-    pygame.quit()
-    sys.exit()
-
-if __name__ == "__main__":
-    main()
+    pygame.display.update()
