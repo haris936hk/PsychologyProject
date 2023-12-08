@@ -13,26 +13,34 @@ pygame.display.set_caption("Main Menu")
 # Set up colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GRAY = (200, 200, 200)
 
 # Set up font
-font = pygame.font.Font(None, 36)
+font = pygame.font.Font(pygame.font.get_default_font(), 48)  # Increased font size
 
 def display_menu():
     screen.fill(WHITE)
 
-    menu_text = font.render("Main Menu:", True, BLACK)
-    screen.blit(menu_text, (WIDTH // 2 - 100, 50))
+    # Draw menu text
+    menu_text = font.render("Main Menu", True, BLACK)
+    menu_rect = menu_text.get_rect(center=(WIDTH // 2, 100))
+    screen.blit(menu_text, menu_rect)
 
-    option1_text = font.render("1. Play Reaction Time Test", True, BLACK)
-    screen.blit(option1_text, (WIDTH // 2 - 200, HEIGHT // 2 - 20))
-
-    option2_text = font.render("2. Play Verbal Memory Test", True, BLACK)
-    screen.blit(option2_text, (WIDTH // 2 - 200, HEIGHT // 2 + 20))
-
-    option3_text = font.render("3. Quit", True, BLACK)
-    screen.blit(option3_text, (WIDTH // 2 - 200, HEIGHT // 2 + 60))
+    # Draw menu options with a highlighted effect
+    options = ["Play Reaction Time Test", "Play Verbal Memory Test", "Quit"]
+    option_rects = []  # Fix: Added an empty list to store option_rects
+    for i, option in enumerate(options, start=1):
+        option_text = font.render(f"{i}. {option}", True, BLACK)
+        text_rect = option_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + i * 60))
+        option_rects.append(text_rect)  # Fix: Added the rect to option_rects
+        # Highlight the option on hover
+        if text_rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.draw.rect(screen, GRAY, text_rect.inflate(10, 5))
+        screen.blit(option_text, text_rect)
 
     pygame.display.flip()
+
+    return option_rects  # Fix: Returned option_rects
 
 def play_reaction_time_test():
     try:
@@ -48,7 +56,7 @@ def play_verbal_memory_test():
 
 def main_menu():
     while True:
-        display_menu()
+        option_rects = display_menu()  # Fix: Retrieve option_rects from display_menu()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -63,6 +71,18 @@ def main_menu():
                     print("Goodbye!")
                     pygame.quit()
                     sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # Left mouse button
+                    for i, rect in enumerate(option_rects, start=1):
+                        if rect.collidepoint(event.pos):
+                            if i == 1:
+                                play_reaction_time_test()
+                            elif i == 2:
+                                play_verbal_memory_test()
+                            elif i == 3:
+                                print("Goodbye!")
+                                pygame.quit()
+                                sys.exit()
 
 if __name__ == "__main__":
     main_menu()
