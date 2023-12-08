@@ -1,82 +1,88 @@
+# Imports
 import pygame
 import sys
 import time
 import random
+import threading
 
-# Initialize Pygame
 pygame.init()
 
-# Screen Setup
-screen_width, screen_height = 720, 720
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Reaction Time Game")
+# Screen + Font
+screen = pygame.display.set_mode((720, 720))
+pygame.display.set_caption("Reaction Time!")
 
-# Fonts
-font_large = pygame.font.SysFont("Roboto", 90)
-font_medium = pygame.font.SysFont("Roboto", 40)
+main_font = pygame.font.SysFont("Roboto", 90)
 
-# Colors
-white = (255, 255, 255)
-black = (0, 0, 0)
-red = (255, 0, 0)
-yellow = (255, 255, 0)
-green = (0, 255, 0)
+# Title
+title = main_font.render("Reaction Time Game", True, "red")
+title_rect = title.get_rect(center=(360, 50))
 
-# Texts
-title = font_large.render("Reaction Time Game", True, red)
-click_to_start_text = font_large.render("Click to Start", True, black)
-waiting_text = font_large.render("Wait...", True, black)
-click_now_text = font_large.render("Click NOW!", True, black)
+# Click to Start
+click_to_start = main_font.render("Click to Start", True, "black")
+click_to_start_rect = click_to_start.get_rect(center=(360, 360))
 
-# Rectangles
-title_rect = title.get_rect(center=(screen_width // 2, 50))
-click_to_start_rect = click_to_start_text.get_rect(center=(screen_width // 2, screen_height // 2))
-waiting_rect = waiting_text.get_rect(center=(screen_width // 2, screen_height // 2))
-click_now_rect = click_now_text.get_rect(center=(screen_width // 2, screen_height // 2))
+# Waiting
+waiting = main_font.render("Wait...", True, "black")
+waiting_rect = waiting.get_rect(center=(360, 360))
+
+# Click
+click = main_font.render("Click NOW!", True, "black")
+click_rect = click.get_rect(center=(360, 360))
+
+# Score
+score = main_font.render("Speed: 1000 ms", True, "red")
+score_rect = score.get_rect(center=(360, 360))
 
 # Game State
 game_state = "Click to Start"
 
+# Times 
+start_time, end_time = 0, 0
+
 # Game Loop
 while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if game_state == "Click to Start":
-                game_state = "Waiting"
-            elif game_state == "Test Starting":
-                end_time = time.time()
-                game_state = "Showing Results"
-            elif game_state == "Showing Results":
-                game_state = "Click to Start"
+	# Events and MOUSEBUTTONDOWN
+	for event in pygame.event.get():
+		if event.type == pygame.QUIT:
+			pygame.quit()
+			sys.exit()
+		if event.type == pygame.MOUSEBUTTONDOWN:
+			if game_state == "Click to Start":
+				game_state = "Waiting"
+			elif game_state == "Test Starting":
+				ending_time = time.time()
+				game_state = "Showing Results"
+			elif game_state == "Showing Results":
+				game_state = "Click to Start"
 
-    screen.fill(white)
+	screen.fill("white")
 
-    # Display Title
-    screen.blit(title, title_rect)
+	screen.blit(title, title_rect)
 
-    # Game State Logic
-    if game_state == "Click to Start":
-        screen.blit(click_to_start_text, click_to_start_rect)
-    elif game_state == "Waiting":
-        screen.fill(yellow)
-        screen.blit(waiting_text, waiting_rect)
-        pygame.display.update()
+	# Game State Logic
+	if game_state == "Click to Start":
+		screen.blit(click_to_start, click_to_start_rect)
+	elif game_state == "Waiting":
+		screen.fill("yellow")
 
-        # Introduce a delay before the test starts
-        delay_time = random.uniform(1, 3)
-        time.sleep(delay_time)
+		screen.blit(waiting, waiting_rect)
 
-        game_state = "Test Starting"
-        start_time = time.time()
-    elif game_state == "Test Starting":
-        screen.fill(green)
-        screen.blit(click_now_text, click_now_rect)
-    elif game_state == "Showing Results":
-        reaction_time = round((end_time - start_time) * 1000)
-        score_text = font_large.render(f"Speed: {reaction_time} ms", True, black)
-        screen.blit(score_text, score_text.get_rect(center=(screen_width // 2, screen_height // 2)))
+		pygame.display.update()
 
-    pygame.display.update()
+		delay_time = random.uniform(1, 10)
+
+		time.sleep(delay_time)
+
+		game_state = "Test Starting"
+
+		starting_time = time.time()
+	elif game_state == "Test Starting":
+		screen.fill("green")
+		screen.blit(click, click_rect)
+	elif game_state == "Showing Results":
+		reaction_time = round((ending_time - starting_time) * 1000)
+		score_text = main_font.render(f"Speed: {reaction_time} ms", True, "black")
+		screen.blit(score_text, score_rect)
+
+	# Update Display
+	pygame.display.update()
