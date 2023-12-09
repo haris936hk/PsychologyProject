@@ -28,7 +28,8 @@ def display_words(sequence, font, screen):
     screen.fill(WHITE)
     for i, word in enumerate(sequence):
         text = font.render(word, True, BLACK)
-        screen.blit(text, (300, 200 + i * 50))
+        text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, 200 + i * 50))
+        screen.blit(text, text_rect)
     pygame.display.flip()
 
 # Function to create a button
@@ -41,7 +42,7 @@ def draw_button(screen, rect, color, text, font):
 # Function to get user input for a given word
 def get_user_input(word, font, screen):
     input_text = ""
-    input_rect = pygame.Rect(300, 500, 200, 30)
+    input_rect = pygame.Rect(WINDOW_WIDTH // 4, 500, WINDOW_WIDTH // 2, 30)
     input_active = True
 
     # Display the first word
@@ -67,7 +68,8 @@ def get_user_input(word, font, screen):
         screen.fill(WHITE)
         pygame.draw.rect(screen, BLACK, input_rect, 2)
         text_surface = font.render(input_text, True, BLACK)
-        screen.blit(text_surface, (input_rect.x + 5, input_rect.y + 5))
+        text_rect = text_surface.get_rect(center=input_rect.center)
+        screen.blit(text_surface, text_rect)
         pygame.display.flip()
 
     return input_text.lower()
@@ -110,9 +112,9 @@ def end_game_report(score):
     feedback_text = font.render("Great job! Keep exercising your verbal memory.", True, BLACK)
     play_again_text = font.render("Press 'P' to play again or 'Q' to quit.", True, BLACK)
     
-    screen.blit(report_text, (200, 200))
-    screen.blit(feedback_text, (150, 250))
-    screen.blit(play_again_text, (150, 300))
+    screen.blit(report_text, report_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4)))
+    screen.blit(feedback_text, feedback_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4 + 50)))
+    screen.blit(play_again_text, play_again_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 4 + 100)))
     pygame.display.flip()
 
     waiting_for_input = True
@@ -132,11 +134,11 @@ def end_game_report(score):
 screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Verbal Memory Game")
 
-# Set up the font
+# Use the default Pygame font
 font = pygame.font.Font(None, FONT_SIZE)
 
 # Set up the button
-button_rect = pygame.Rect(300, 300, 200, 50)
+button_rect = pygame.Rect(WINDOW_WIDTH // 4, WINDOW_HEIGHT // 2, WINDOW_WIDTH // 2, 50)
 button_color = BUTTON_NORMAL_COLOR
 
 # Main game loop
@@ -151,9 +153,9 @@ while running:
     title_text = font.render("Verbal Memory Game", True, BLACK)
     instruction_text1 = font.render("Memorize the sequence of words", True, BLACK)
     instruction_text2 = font.render("Type them in the input box below", True, BLACK)
-    screen.blit(title_text, (200, 50))
-    screen.blit(instruction_text1, (150, 200))
-    screen.blit(instruction_text2, (150, 250))
+    screen.blit(title_text, title_text.get_rect(center=(WINDOW_WIDTH // 2, 50)))
+    screen.blit(instruction_text1, instruction_text1.get_rect(center=(WINDOW_WIDTH // 2, 200)))
+    screen.blit(instruction_text2, instruction_text2.get_rect(center=(WINDOW_WIDTH // 2, 250)))
 
     # Check if the mouse is over the button
     if button_rect.collidepoint(pygame.mouse.get_pos()):

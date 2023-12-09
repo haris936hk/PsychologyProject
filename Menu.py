@@ -16,7 +16,7 @@ BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 
 # Set up font
-font = pygame.font.Font(pygame.font.get_default_font(), 48)  # Increased font size
+font = pygame.font.Font(pygame.font.get_default_font(), 48)
 
 def display_menu():
     screen.fill(WHITE)
@@ -27,12 +27,12 @@ def display_menu():
     screen.blit(menu_text, menu_rect)
 
     # Draw menu options with a highlighted effect
-    options = ["Play Reaction Time Test", "Play Verbal Memory Test", "Quit"]
-    option_rects = []  # Fix: Added an empty list to store option_rects
+    options = ["Play Reaction Time Test", "Play Verbal Memory Test", "Play Short Term Memory Test", "Quit"]
+    option_rects = []
     for i, option in enumerate(options, start=1):
         option_text = font.render(f"{i}. {option}", True, BLACK)
         text_rect = option_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + i * 60))
-        option_rects.append(text_rect)  # Fix: Added the rect to option_rects
+        option_rects.append(text_rect)
         # Highlight the option on hover
         if text_rect.collidepoint(pygame.mouse.get_pos()):
             pygame.draw.rect(screen, GRAY, text_rect.inflate(10, 5))
@@ -40,7 +40,7 @@ def display_menu():
 
     pygame.display.flip()
 
-    return option_rects  # Fix: Returned option_rects
+    return option_rects
 
 def play_reaction_time_test():
     try:
@@ -54,9 +54,15 @@ def play_verbal_memory_test():
     except subprocess.CalledProcessError as e:
         print(f"Error: {e}")
 
+def play_short_term_memory_test():
+    try:
+        subprocess.run(["python", "ShortTermMemory.py"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+
 def main_menu():
     while True:
-        option_rects = display_menu()  # Fix: Retrieve option_rects from display_menu()
+        option_rects = display_menu()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -68,11 +74,13 @@ def main_menu():
                 elif event.key == pygame.K_2:
                     play_verbal_memory_test()
                 elif event.key == pygame.K_3:
+                    play_short_term_memory_test()
+                elif event.key == pygame.K_4:
                     print("Goodbye!")
                     pygame.quit()
                     sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # Left mouse button
+                if event.button == 1:
                     for i, rect in enumerate(option_rects, start=1):
                         if rect.collidepoint(event.pos):
                             if i == 1:
@@ -80,6 +88,8 @@ def main_menu():
                             elif i == 2:
                                 play_verbal_memory_test()
                             elif i == 3:
+                                play_short_term_memory_test()
+                            elif i == 4:
                                 print("Goodbye!")
                                 pygame.quit()
                                 sys.exit()
