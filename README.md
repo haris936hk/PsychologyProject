@@ -152,11 +152,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Inspired by cognitive assessment tools used in psychology and neuroscience
 - Thanks to the open-source community for continuous inspiration
 
-## 📞 Contact
-
-- **GitHub**: [@yourusername](https://github.com/yourusername)
-- **Email**: your.email@example.com
-
 ---
 
 **Note**: These games are designed for entertainment and basic cognitive assessment. They are not intended as professional diagnostic tools.
